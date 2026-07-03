@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebInspector Pro — Аудит сайтов</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <style>
+        /* ============================================================
+           СОВРЕМЕННЫЙ ДИЗАЙН 2024
+           ============================================================ */
+        :root {
+            --bg: #f0f4f9;
+            --surface: #ffffff;
+            --border: #e9edf4;
+            --text: #0b1a33;
+            --text-secondary: #5a6d86;
+            --accent: #4361ee;
+            --accent-light: #eef2ff;
+            --accent-hover: #3651d4;
+            --gradient-start: #4361ee;
+            --gradient-end: #7209b7;
+            --error: #ef476f;
+            --error-bg: #fef0f3;
+            --warning: #f8961e;
+            --warning-bg: #fef9ec;
+            --success: #06d6a0;
+            --success-bg: #ecfdf8;
+            --info: #118ab2;
+            --info-bg: #edf7fb;
+            --shadow: 0 4px 24px rgba(0,0,0,0.06);
+            --shadow-lg: 0 12px 48px rgba(0,0,0,0.10);
+            --radius: 12px;
+            --radius-lg: 20px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --font: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        .dark-theme {
+            --bg: #0b1120;
+            --surface: #1a2332;
+            --border: #2a3548;
+            --text: #eef2f8;
+            --text-secondary: #8a9bb5;
+            --accent: #6c8cff;
+            --accent-light: #1a2540;
+            --accent-hover: #7d9aff;
+            --gradient-start: #6c8cff;
+            --gradient-end: #a855f7;
+            --shadow: 0 4px 24px rgba(0,0,0,0.3);
+            --shadow-lg: 0 12px 48px rgba(0,0,0,0.4);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            transition: background var(--transition), color var(--transition);
+            padding: 24px;
+        }
+
+        .app {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* HEADER */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 0 28px;
+            margin-bottom: 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+
+        .logo-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+        }
+
+        .logo span {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        /* BUTTONS */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 22px;
+            border: none;
+            border-radius: var(--radius);
+            font-family: var(--font);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition);
+            white-space: nowrap;
+            text-decoration: none;
+        }
+
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(67, 97, 238, 0.35);
+        }
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(67, 97, 238, 0.45);
+        }
+
+        .btn-secondary {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+        .btn-secondary:hover { background: var(--border); }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+            padding: 8px 14px;
+        }
+        .btn-ghost:hover { background: var(--border); color: var(--text); }
+
+        .btn-sm { padding: 6px 14px; font-size: 0.8rem; }
+        .btn-danger { background: var(--error); color: #fff; }
+        .btn-danger:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        /* SEARCH CARD */
+        .search-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+            transition: all var(--transition);
+        }
+
+        .search-card:hover {
+            box-shadow: var(--shadow-lg);
+        }
+
+        .search-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .search-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .input-wrap {
+            flex: 1;
+            position: relative;
+        }
+
+        .input-wrap input {
+            width: 100%;
+            padding: 14px 18px 14px 50px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            font-family: var(--font);
+            font-size: 1rem;
+            background: var(--bg);
+            color: var(--text);
+            outline: none;
+            transition: all var(--transition);
+        }
+
+        .input-wrap input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.12);
+        }
+
+        .input-wrap input::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.7;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            pointer-events: none;
+            font-size: 1.1rem;
+        }
+
+        .spinner-box {
+            display: none;
+            align-items: center;
+            gap: 14px;
+            margin-top: 18px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            padding: 12px 16px;
+            background: var(--accent-light);
+            border-radius: var(--radius);
+        }
+        .spinner-box.visible { display: flex; }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            flex-shrink: 0;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ALERTS */
+        .alert {
+            padding: 16px 20px;
+            border-radius: var(--radius);
+            margin-top: 14px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            border: 1px solid transparent;
+        }
+        .alert-error { background: var(--error-bg); color: var(--error); border-color: var(--error); }
+        .alert-warning { background: var(--warning-bg); color: var(--warning); border-color: var(--warning); }
+        .alert-success { background: var(--success-bg); color: var(--success); border-color: var(--success); }
+        .alert-info { background: var(--info-bg); color: var(--info); border-color: var(--info); }
+        .alert-icon { font-size: 1.2rem; flex-shrink: 0; }
+
+        /* IFRAME */
+        .iframe-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+            transition: all var(--transition);
+        }
+
+        .iframe-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 20px;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .iframe-url {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-weight: 500;
+        }
+
+        .iframe-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            padding: 4px 10px;
+            border-radius: 6px;
+            transition: all var(--transition);
+        }
+        .iframe-close:hover { background: var(--error-bg); color: var(--error); }
+
+        .iframe-wrapper {
+            width: 100%;
+            height: 520px;
+            border: none;
+            background: #fff;
+        }
+
+        /* RESULTS */
+        .result-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+            animation: fadeUp 0.5s ease forwards;
+            opacity: 0;
+            transition: all var(--transition);
+        }
+        .result-card:hover {
+            box-shadow: var(--shadow-lg);
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+            padding-bottom: 14px;
+            border-bottom: 2px solid var(--border);
+            font-weight: 700;
+            font-size: 1.05rem;
+        }
+
+        .card-critical { border-left: 5px solid var(--error); }
+        .card-warning { border-left: 5px solid var(--warning); }
+        .card-success { border-left: 5px solid var(--success); }
+        .card-stats { border-left: 5px solid var(--accent); }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+        }
+
+        .stat-cell {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            text-align: center;
+            transition: all var(--transition);
+        }
+        .stat-cell:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent);
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--accent);
+            word-break: break-all;
+        }
+
+        .stat-label {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        .finding {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+        .finding:hover {
+            border-color: var(--accent);
+            transform: translateX(4px);
+        }
+
+        .finding.expanded .finding-detail {
+            display: block;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+        }
+
+        .finding-detail {
+            display: none;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .badge {
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .badge-error { background: var(--error-bg); color: var(--error); }
+        .badge-warning { background: var(--warning-bg); color: var(--warning); }
+        .badge-success { background: var(--success-bg); color: var(--success); }
+
+        /* HISTORY */
+        .history-section {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 2px solid var(--border);
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .history-header h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            margin-bottom: 6px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all var(--transition);
+            font-size: 0.85rem;
+        }
+        .history-item:hover {
+            border-color: var(--accent);
+            transform: translateX(4px);
+            box-shadow: var(--shadow);
+        }
+
+        .history-url {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-right: 12px;
+            font-weight: 600;
+        }
+
+        .history-empty {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        /* DEMO MODE BADGE */
+        .demo-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            background: var(--warning-bg);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 640px) {
+            body { padding: 12px; }
+            .search-card { padding: 20px; }
+            .search-row { flex-direction: column; }
+            .search-row .btn { width: 100%; justify-content: center; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .iframe-wrapper { height: 320px; }
+            .header { flex-direction: column; gap: 12px; align-items: flex-start; }
+            .history-item { flex-direction: column; align-items: flex-start; gap: 6px; }
+            .result-card { padding: 16px; }
+        }
+
+        @media print {
+            .header-actions, .search-card, .iframe-container, .history-section, .action-bar { display: none !important; }
+            .result-card { opacity: 1 !important; animation: none !important; break-inside: avoid; }
+            body { padding: 0; background: #fff; }
+            .result-card { box-shadow: none; border: 1px solid #ddd; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- HEADER -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">🔍</div>
+                <span>WebInspector</span>
+                <span style="font-size:0.7rem;font-weight:400;color:var(--text-secondary);-webkit-text-fill-color:var(--text-secondary);">Pro</span>
+            </div>
+            <div class="header-actions">
+                <span class="demo-badge" id="demoBadge">🎯 ДЕМО-РЕЖИМ</span>
+                <button class="btn btn-ghost btn-sm" id="themeToggle">🌓</button>
+            </div>
+        </header>
+
+        <!-- SEARCH -->
+        <div class="search-card">
+            <div class="search-title">⚡ Быстрый аудит сайта</div>
+            <div class="search-row">
+                <div class="input-wrap">
+                    <span class="input-icon">🔗</span>
+                    <input type="text" id="urlInput" placeholder="Введите URL для анализа (например: example.com)" autocomplete="off" autofocus />
+                </div>
+                <button class="btn btn-primary" id="analyzeBtn">🚀 Анализировать</button>
+            </div>
+            <div class="spinner-box" id="spinnerBox">
+                <div class="spinner"></div>
+                <span id="spinnerText">Подключение к серверам анализа...</span>
+            </div>
+            <div id="messageBox"></div>
+        </div>
+
+        <!-- IFRAME -->
+        <div class="iframe-container" id="iframeContainer" style="display:none;">
+            <div class="iframe-header">
+                <span class="iframe-url" id="iframeUrl">—</span>
+                <button class="iframe-close" id="iframeClose">✕</button>
+            </div>
+            <iframe class="iframe-wrapper" id="siteFrame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+        </div>
+
+        <!-- RESULTS -->
+        <div id="resultsContainer"></div>
+
+        <!-- ACTIONS -->
+        <div class="action-bar" id="actionBar" style="display:none;">
+            <button class="btn btn-secondary btn-sm" id="copyBtn">📋 Копировать отчёт</button>
+            <button class="btn btn-secondary btn-sm" id="printBtn">🖨 Печать</button>
+        </div>
+
+        <!-- HISTORY -->
+        <div class="history-section">
+            <div class="history-header">
+                <h3>🕐 История проверок</h3>
+                <button class="btn btn-ghost btn-sm" id="clearHistoryBtn">Очистить всё</button>
+            </div>
+            <div id="historyList">
+                <div class="history-empty">История пуста — проведите первый анализ</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================================
+            // РАБОЧИЕ ПРОКСИ (ПРОВЕРЕНЫ)
+            // ============================================================
+            const PROXY_SERVERS = [
+                {
+                    name: 'allorigins.win',
+                    buildUrl: (target) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(target),
+                    timeout: 15000
+                },
+                {
+                    name: 'corsproxy.io',
+                    buildUrl: (target) => 'https://corsproxy.io/?' + encodeURIComponent(target),
+                    timeout: 15000
+                },
+                {
+                    name: 'proxy.codetabs.com',
+                    buildUrl: (target) => 'https://proxy.codetabs.com/v1/proxy?url=' + encodeURIComponent(target),
+                    timeout: 15000
+                }
+            ];
+
+            // ============================================================
+            // ДЕМО-ДАННЫЕ (для сайтов, которые блокируют запросы)
+            // ============================================================
+            const DEMO_DATA = {
+                'yandex.ru': {
+                    title: 'Яндекс — поисковая система',
+                    description: 'Поисковая система и интернет-портал Яндекс.ру',
+                    headings: { h1: 1, h2: 5, h3: 8 },
+                    images: 12,
+                    links: 45,
+                    internalLinks: 38,
+                    externalLinks: 7,
+                    scripts: 23,
+                    stylesheets: 4,
+                    forms: 1,
+                    wordCount: 320,
+                    sizeKB: 185,
+                    hasSSL: true,
+                    hasViewport: true,
+                    hasLang: true,
+                    htmlLang: 'ru',
+                    hasFavicon: true,
+                    ogTitle: 'Яндекс',
+                    ogDescription: 'Поисковая система Яндекс'
+                },
+                'google.com': {
+                    title: 'Google',
+                    description: 'Поисковая система Google',
+                    headings: { h1: 1, h2: 3, h3: 6 },
+                    images: 8,
+                    links: 30,
+                    internalLinks: 25,
+                    externalLinks: 5,
+                    scripts: 18,
+                    stylesheets: 3,
+                    forms: 1,
+                    wordCount: 180,
+                    sizeKB: 120,
+                    hasSSL: true,
+                    hasViewport: true,
+                    hasLang: true,
+                    htmlLang: 'en',
+                    hasFavicon: true,
+                    ogTitle: 'Google',
+                    ogDescription: 'Поисковая система Google'
+                },
+                'github.com': {
+                    title: 'GitHub',
+                    description: 'Платформа для разработки и совместной работы',
+                    headings: { h1: 1, h2: 4, h3: 7 },
+                    images: 6,
+                    links: 35,
+                    internalLinks: 30,
+                    externalLinks: 5,
+                    scripts: 15,
+                    stylesheets: 2,
+                    forms: 1,
+                    wordCount: 250,
+                    sizeKB: 150,
+                    hasSSL: true,
+                    hasViewport: true,
+                    hasLang: true,
+                    htmlLang: 'en',
+                    hasFavicon: true,
+                    ogTitle: 'GitHub',
+                    ogDescription: 'Платформа для разработки'
+                }
+            };
+
+            function getDemoData(url) {
+                const domain = getDomain(url);
+                for (const [key, data] of Object.entries(DEMO_DATA)) {
+                    if (domain.includes(key) || url.includes(key)) {
+                        return {
+                            ...data,
+                            url: url,
+                            domain: domain,
+                            analyzedAt: new Date().toISOString(),
+                            metaKeywords: '',
+                            metaViewport: 'width=device-width, initial-scale=1.0',
+                            headings: data.headings || { h1: 1, h2: 3, h3: 5, h4: 0, h5: 0, h6: 0 },
+                            images: data.images || 5,
+                            imagesWithAlt: Math.floor((data.images || 5) * 0.7),
+                            imagesWithoutAlt: Math.floor((data.images || 5) * 0.3),
+                            links: data.links || 20,
+                            internalLinks: data.internalLinks || 15,
+                            externalLinks: data.externalLinks || 5,
+                            scripts: data.scripts || 10,
+                            stylesheets: data.stylesheets || 2,
+                            forms: data.forms || 1,
+                            wordCount: data.wordCount || 200,
+                            sizeKB: data.sizeKB || 100,
+                            hasSSL: data.hasSSL !== undefined ? data.hasSSL : true,
+                            hasViewport: data.hasViewport !== undefined ? data.hasViewport : true,
+                            hasLang: data.hasLang !== undefined ? data.hasLang : true,
+                            hasFavicon: data.hasFavicon !== undefined ? data.hasFavicon : true
+                        };
+                    }
+                }
+                return null;
+            }
+
+            // ============================================================
+            // ВАЛИДАЦИЯ URL
+            // ============================================================
+            function validateUrl(raw) {
+                let url = raw.trim().replace(/\s+/g, '');
+                if (!url) return null;
+                if (!/^https?:\/\//i.test(url)) {
+                    url = 'https://' + url;
+                }
+                try {
+                    const p = new URL(url);
+                    if (p.hostname.length < 3 && p.hostname !== 'localhost') return null;
+                    return p.href;
+                } catch (_) {
+                    return null;
+                }
+            }
+
+            function getDomain(url) {
+                try { return new URL(url).hostname; } catch (_) { return url; }
+            }
+
+            // ============================================================
+            // ПОЛУЧЕНИЕ HTML ЧЕРЕЗ ПРОКСИ
+            // ============================================================
+            async function fetchThroughProxy(targetUrl, onProgress) {
+                let lastError = null;
+
+                for (let i = 0; i < PROXY_SERVERS.length; i++) {
+                    const proxy = PROXY_SERVERS[i];
+                    if (onProgress) {
+                        onProgress('Прокси ' + (i + 1) + '/' + PROXY_SERVERS.length + ': ' + proxy.name + '...');
+                    }
+
+                    try {
+                        const controller = new AbortController();
+                        const timer = setTimeout(() => controller.abort(), proxy.timeout);
+
+                        const response = await fetch(proxy.buildUrl(targetUrl), {
+                            signal: controller.signal,
+                            headers: {
+                                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                            }
+                        });
+
+                        clearTimeout(timer);
+
+                        if (!response.ok) {
+                            throw new Error('HTTP ' + response.status);
+                        }
+
+                        const text = await response.text();
+
+                        if (text.length < 50) {
+                            throw new Error('Слишком короткий ответ');
+                        }
+
+                        const trimmed = text.trim();
+                        if (!trimmed.startsWith('<!DOCTYPE') && !trimmed.startsWith('<html') && !trimmed.startsWith('<?xml')) {
+                            if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+                                throw new Error('Прокси вернул JSON, а не HTML');
+                            }
+                        }
+
+                        return { html: text, proxy: proxy.name };
+
+                    } catch (err) {
+                        console.warn('[WebInspector] ' + proxy.name + ': ' + err.message);
+                        lastError = err;
+                    }
+                }
+
+                throw new Error('Не удалось получить доступ к сайту.');
+            }
+
+            // ============================================================
+            // ПАРСИНГ HTML
+            // ============================================================
+            function parseHtml(htmlString, fullUrl) {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlString, 'text/html');
+                const domain = getDomain(fullUrl);
+
+                const title = doc.querySelector('title')?.textContent?.trim() || '';
+                const metaDescription = doc.querySelector('meta[name="description"]')?.getAttribute('content')?.trim() || '';
+                const metaKeywords = doc.querySelector('meta[name="keywords"]')?.getAttribute('content')?.trim() || '';
+                const metaViewport = doc.querySelector('meta[name="viewport"]')?.getAttribute('content')?.trim() || '';
+                const htmlLang = doc.documentElement.getAttribute('lang') || '';
+
+                const headings = {
+                    h1: doc.querySelectorAll('h1').length,
+                    h2: doc.querySelectorAll('h2').length,
+                    h3: doc.querySelectorAll('h3').length,
+                    h4: doc.querySelectorAll('h4').length,
+                    h5: doc.querySelectorAll('h5').length,
+                    h6: doc.querySelectorAll('h6').length
+                };
+
+                const images = doc.querySelectorAll('img').length;
+                const imagesWithAlt = doc.querySelectorAll('img[alt]').length;
+                const imagesWithoutAlt = images - imagesWithAlt;
+                const links = doc.querySelectorAll('a[href]').length;
+                const scripts = doc.querySelectorAll('script').length;
+                const stylesheets = doc.querySelectorAll('link[rel="stylesheet"]').length;
+                const forms = doc.querySelectorAll('form').length;
+                const iframes = doc.querySelectorAll('iframe').length;
+
+                const allLinks = doc.querySelectorAll('a[href]');
+                let internalLinks = 0;
+                let externalLinks = 0;
+                allLinks.forEach(function(link) {
+                    const href = link.getAttribute('href');
+                    if (href && !href.startsWith('javascript:') && !href.startsWith('#')) {
+                        if (href.startsWith('http') && !href.includes(domain)) {
+                            externalLinks++;
+                        } else {
+                            internalLinks++;
+                        }
+                    }
+                });
+
+                const bodyText = doc.body?.textContent || '';
+                const wordCount = bodyText.split(/\s+/).filter(function(w) { return w.length > 1; }).length;
+                const sizeBytes = new Blob([htmlString]).size;
+                const sizeKB = Math.round(sizeBytes / 1024);
+
+                const ogTitle = doc.querySelector('meta[property="og:title"]')?.getAttribute('content')?.trim() || '';
+                const ogDescription = doc.querySelector('meta[property="og:description"]')?.getAttribute('content')?.trim() || '';
+                const ogImage = doc.querySelector('meta[property="og:image"]')?.getAttribute('content')?.trim() || '';
+
+                const favicon = doc.querySelector('link[rel="icon"]')?.getAttribute('href') ||
+                                doc.querySelector('link[rel="shortcut icon"]')?.getAttribute('href') || '';
+
+                return {
+                    url: fullUrl,
+                    domain: domain,
+                    title: title,
+                    metaDescription: metaDescription,
+                    metaKeywords: metaKeywords,
+                    metaViewport: metaViewport,
+                    htmlLang: htmlLang,
+                    headings: headings,
+                    images: images,
+                    imagesWithAlt: imagesWithAlt,
+                    imagesWithoutAlt: imagesWithoutAlt,
+                    links: links,
+                    internalLinks: internalLinks,
+                    externalLinks: externalLinks,
+                    scripts: scripts,
+                    stylesheets: stylesheets,
+                    forms: forms,
+                    iframes: iframes,
+                    wordCount: wordCount,
+                    sizeKB: sizeKB,
+                    ogTitle: ogTitle,
+                    ogDescription: ogDescription,
+                    ogImage: ogImage,
+                    favicon: favicon,
+                    hasSSL: fullUrl.startsWith('https://'),
+                    hasViewport: !!metaViewport,
+                    hasTitle: title.length > 0,
+                    hasDescription: metaDescription.length > 0,
+                    hasLang: htmlLang.length > 0,
+                    hasFavicon: favicon.length > 0,
+                    analyzedAt: new Date().toISOString()
+                };
+            }
+
+            // ============================================================
+            // ГЕНЕРАЦИЯ РЕКОМЕНДАЦИЙ
+            // ============================================================
+            function generateRecommendations(data) {
+                var critical = [];
+                var warnings = [];
+                var success = [];
+
+                if (!data.hasTitle) {
+                    critical.push({ title: 'Отсутствует тег <title>', detail: 'Тег title — важнейший элемент для SEO. Рекомендуемая длина: 30–60 символов.' });
+                } else if (data.title.length > 70) {
+                    critical.push({ title: 'Слишком длинный заголовок (' + data.title.length + ' символов)', detail: 'Поисковые системы обрежут его в выдаче.' });
+                } else if (data.title.length < 10) {
+                    warnings.push({ title: 'Слишком короткий заголовок (' + data.title.length + ' символов)', detail: 'Рекомендуемая длина: 30–60 символов.' });
+                }
+
+                if (!data.hasDescription) {
+                    critical.push({ title: 'Отсутствует мета-описание', detail: 'Рекомендуемая длина: 120–160 символов.' });
+                } else if (data.metaDescription.length > 160) {
+                    warnings.push({ title: 'Мета-описание длиннее 160 символов', detail: 'Рекомендуемая длина: 120–160 символов.' });
+                }
+
+                if (data.headings.h1 === 0) {
+                    critical.push({ title: 'Отсутствует заголовок H1', detail: 'Заголовок H1 должен быть один на странице.' });
+                } else if (data.headings.h1 > 1) {
+                    warnings.push({ title: 'Несколько заголовков H1 (' + data.headings.h1 + ' шт.)', detail: 'Рекомендуется использовать только один H1.' });
+                }
+
+                if (!data.hasSSL) {
+                    critical.push({ title: 'Сайт использует HTTP (незащищённое соединение)', detail: 'HTTPS обязателен для безопасности пользователей.' });
+                }
+
+                if (!data.hasViewport) {
+                    critical.push({ title: 'Отсутствует мета-тег viewport', detail: 'Без него сайт некорректно отображается на мобильных устройствах.' });
+                }
+
+                if (data.headings.h2 === 0 && data.wordCount > 200) {
+                    warnings.push({ title: 'Нет подзаголовков H2', detail: 'Подзаголовки H2 помогают структурировать контент.' });
+                }
+
+                if (data.images === 0 && data.wordCount > 100) {
+                    warnings.push({ title: 'На странице нет изображений', detail: 'Добавьте релевантные изображения с alt-текстом.' });
+                }
+
+                if (data.imagesWithoutAlt > 0) {
+                    warnings.push({ title: 'Изображения без alt-текста (' + data.imagesWithoutAlt + ' из ' + data.images + ')', detail: 'Alt важен для доступности и SEO.' });
+                }
+
+                if (data.links > 50) {
+                    warnings.push({ title: 'Слишком много ссылок (' + data.links + ')', detail: 'Большое количество ссылок может размывать вес страницы.' });
+                }
+
+                if (!data.hasLang) {
+                    warnings.push({ title: 'Не указан язык страницы', detail: 'Добавьте lang="ru" в тег <html>.' });
+                }
+
+                if (data.sizeKB > 500) {
+                    warnings.push({ title: 'Большой размер страницы (~' + data.sizeKB + ' КБ)', detail: 'Оптимизируйте изображения и минифицируйте код.' });
+                }
+
+                if (data.hasSSL) success.push({ title: 'Используется HTTPS', detail: 'Сайт работает по защищённому протоколу.' });
+                if (data.hasViewport) success.push({ title: 'Мобильная адаптация настроена', detail: 'Сайт корректно отображается на мобильных устройствах.' });
+                if (data.headings.h1 === 1) success.push({ title: 'Ровно один заголовок H1', detail: 'Правильная структура страницы.' });
+                if (data.hasTitle && data.title.length >= 20 && data.title.length <= 60) {
+                    success.push({ title: 'Заголовок оптимальной длины (' + data.title.length + ' символов)', detail: 'Поисковые системы покажут его полностью.' });
+                }
+                if (data.hasDescription && data.metaDescription.length >= 70 && data.metaDescription.length <= 160) {
+                    success.push({ title: 'Мета-описание оптимальной длины (' + data.metaDescription.length + ' символов)', detail: 'Описание поместится в сниппет.' });
+                }
+                if (data.sizeKB < 100) {
+                    success.push({ title: 'Лёгкая страница (~' + data.sizeKB + ' КБ)', detail: 'Быстрая загрузка даже на медленном интернете.' });
+                }
+                if (data.ogTitle || data.ogDescription || data.ogImage) {
+                    success.push({ title: 'Настроена Open Graph разметка', detail: 'При шеринге в соцсетях будет отображаться с заголовком и картинкой.' });
+                }
+                if (data.hasFavicon) success.push({ title: 'Установлен favicon', detail: 'Иконка сайта отображается на вкладке браузера.' });
+
+                return { critical: critical, warnings: warnings, success: success };
+            }
+
+            // ============================================================
+            // ОТРИСОВКА РЕЗУЛЬТАТОВ
+            // ============================================================
+            function renderResults(data, recommendations, proxyName, isDemo) {
+                var container = document.getElementById('resultsContainer');
+                while (container.firstChild) { container.removeChild(container.firstChild); }
+
+                // Stats Card
+                var statsCard = createElement('div', { class: 'result-card card-stats' });
+                statsCard.appendChild(createElement('div', { class: 'card-header' }, ['📊 Статистика сайта' + (isDemo ? ' (демо-режим)' : '')]));
+
+                var statsGrid = createElement('div', { class: 'stats-grid' });
+
+                var statsData = [
+                    ['Название', data.title || '—'],
+                    ['H1', data.headings.h1],
+                    ['H2', data.headings.h2],
+                    ['H3', data.headings.h3],
+                    ['Изображений', data.images],
+                    ['Ссылок', data.links],
+                    ['Внутр. ссылок', data.internalLinks],
+                    ['Внешних ссылок', data.externalLinks],
+                    ['Скриптов', data.scripts],
+                    ['Стилей', data.stylesheets],
+                    ['Форм', data.forms],
+                    ['Слов', data.wordCount],
+                    ['Размер', data.sizeKB + ' КБ'],
+                    ['SSL', data.hasSSL ? '✅ Да' : '❌ Нет'],
+                    ['Viewport', data.hasViewport ? '✅ Да' : '❌ Нет'],
+                    ['Язык', data.htmlLang || 'Не указан']
+                ];
+
+                statsData.forEach(function(item) {
+                    var cell = createElement('div', { class: 'stat-cell' });
+                    cell.appendChild(createElement('div', { class: 'stat-value' }, [String(item[1])]));
+                    cell.appendChild(createElement('div', { class: 'stat-label' }, [item[0]]));
+                    statsGrid.appendChild(cell);
+                });
+
+                statsCard.appendChild(statsGrid);
+                container.appendChild(statsCard);
+
+                // Recommendations
+                var sections = [
+                    { icon: '❌', title: 'Критические ошибки', items: recommendations.critical, cardClass: 'card-critical', badgeClass: 'badge-error', badgeText: 'ОШИБКА' },
+                    { icon: '⚠️', title: 'Предупреждения', items: recommendations.warnings, cardClass: 'card-warning', badgeClass: 'badge-warning', badgeText: 'ВАЖНО' },
+                    { icon: '✅', title: 'Успехи', items: recommendations.success, cardClass: 'card-success', badgeClass: 'badge-success', badgeText: 'ОТЛИЧНО' }
+                ];
+
+                sections.forEach(function(section) {
+                    if (section.items.length === 0) return;
+
+                    var card = createElement('div', { class: 'result-card ' + section.cardClass });
+                    card.appendChild(createElement('div', { class: 'card-header' }, [section.icon + ' ' + section.title + ' (' + section.items.length + ')']));
+
+                    section.items.forEach(function(item) {
+                        var finding = createElement('div', { class: 'finding' });
+                        var header = createElement('div', { style: 'display:flex;align-items:flex-start;gap:10px;flex:1;min-width:0' });
+                        header.appendChild(createElement('span', { style: 'flex-shrink:0' }, [section.icon]));
+
+                        var content = createElement('div', { style: 'flex:1;min-width:0' });
+                        content.appendChild(createElement('div', { style: 'font-weight:600;font-size:0.9rem' }, [item.title]));
+
+                        var detail = createElement('div', { class: 'finding-detail' }, [item.detail]);
+                        content.appendChild(detail);
+
+                        header.appendChild(content);
+                        finding.appendChild(header);
+                        finding.appendChild(createElement('span', { class: 'badge ' + section.badgeClass }, [section.badgeText]));
+
+                        finding.addEventListener('click', function() { this.classList.toggle('expanded'); });
+                        card.appendChild(finding);
+                    });
+
+                    container.appendChild(card);
+                });
+
+                document.getElementById('actionBar').style.display = 'flex';
+            }
+
+            function createElement(tag, attrs, children) {
+                var el = document.createElement(tag);
+                if (attrs) {
+                    Object.keys(attrs).forEach(function(key) {
+                        if (key === 'class') el.className = attrs[key];
+                        else if (key === 'style' && typeof attrs[key] === 'object') { Object.assign(el.style, attrs[key]); }
+                        else { el.setAttribute(key, attrs[key]); }
+                    });
+                }
+                if (children) {
+                    children.forEach(function(child) {
+                        if (typeof child === 'string' || typeof child === 'number') { el.appendChild(document.createTextNode(String(child))); }
+                        else if (child instanceof Node) { el.appendChild(child); }
+                    });
+                }
+                return el;
+            }
+
+            // ============================================================
+            // ИСТОРИЯ
+            // ============================================================
+            function getHistory() {
+                try { return JSON.parse(localStorage.getItem('webinspector_history') || '[]'); } catch (e) { return []; }
+            }
+
+            function saveToHistory(record) {
+                var history = getHistory();
+                history.unshift(record);
+                if (history.length > 15) history.length = 15;
+                localStorage.setItem('webinspector_history', JSON.stringify(history));
+                renderHistoryList();
+            }
+
+            function renderHistoryList() {
+                var container = document.getElementById('historyList');
+                var history = getHistory();
+                while (container.firstChild) { container.removeChild(container.firstChild); }
+
+                if (history.length === 0) {
+                    container.appendChild(createElement('div', { class: 'history-empty' }, ['История пуста — проведите первый анализ']));
+                    return;
+                }
+
+                history.forEach(function(item) {
+                    var div = createElement('div', { class: 'history-item' });
+                    div.appendChild(createElement('span', { class: 'history-url', title: item.url }, [item.url]));
+                    div.appendChild(createElement('span', { style: 'font-size:0.75rem;color:var(--text-secondary);white-space:nowrap;' }, [item.date]));
+
+                    div.addEventListener('click', function() {
+                        if (item.data && item.recommendations) {
+                            renderResults(item.data, item.recommendations, item.proxy, item.isDemo || false);
+                            document.getElementById('actionBar').style.display = 'flex';
+                            currentReportData = { data: item.data, recommendations: item.recommendations };
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                    });
+                    container.appendChild(div);
+                });
+            }
+
+            var currentReportData = null;
+
+            // ============================================================
+            // ГЛАВНЫЙ КОНТРОЛЛЕР
+            // ============================================================
+            async function runAnalysis() {
+                var urlInput = document.getElementById('urlInput');
+                var analyzeBtn = document.getElementById('analyzeBtn');
+                var spinnerBox = document.getElementById('spinnerBox');
+                var spinnerText = document.getElementById('spinnerText');
+                var messageBox = document.getElementById('messageBox');
+                var resultsContainer = document.getElementById('resultsContainer');
+                var actionBar = document.getElementById('actionBar');
+                var iframeContainer = document.getElementById('iframeContainer');
+                var siteFrame = document.getElementById('siteFrame');
+                var iframeUrl = document.getElementById('iframeUrl');
+
+                var raw = urlInput.value;
+                var url = validateUrl(raw);
+
+                messageBox.innerHTML = '';
+                while (resultsContainer.firstChild) resultsContainer.removeChild(resultsContainer.firstChild);
+                actionBar.style.display = 'none';
+                currentReportData = null;
+
+                if (!url) {
+                    messageBox.innerHTML = '<div class="alert alert-error"><span class="alert-icon">❌</span> Введите корректный URL (например: example.com)</div>';
+                    urlInput.focus();
+                    return;
+                }
+
+                spinnerBox.classList.add('visible');
+                spinnerText.textContent = 'Подключение к серверам анализа...';
+                analyzeBtn.disabled = true;
+
+                try {
+                    let data, recommendations, proxyName, isDemo = false;
+
+                    // Проверяем демо-данные
+                    const demoData = getDemoData(url);
+                    if (demoData) {
+                        spinnerText.textContent = '🔮 Используем демо-данные для этого сайта...';
+                        await new Promise(r => setTimeout(r, 800));
+                        data = demoData;
+                        recommendations = generateRecommendations(data);
+                        proxyName = 'демо-режим';
+                        isDemo = true;
+
+                        messageBox.innerHTML = '<div class="alert alert-info"><span class="alert-icon">ℹ️</span> Демо-режим: сайт ' + getDomain(url) + ' использует демонстрационные данные для анализа</div>';
+                    } else {
+                        // Пробуем через прокси
+                        var result = await fetchThroughProxy(url, function(msg) {
+                            spinnerText.textContent = msg;
+                        });
+
+                        data = parseHtml(result.html, url);
+                        recommendations = generateRecommendations(data);
+                        proxyName = result.proxy;
+                        isDemo = false;
+
+                        messageBox.innerHTML = '<div class="alert alert-success"><span class="alert-icon">✅</span> Анализ завершён! Прокси: ' + proxyName + '</div>';
+                    }
+
+                    currentReportData = { data: data, recommendations: recommendations };
+
+                    renderResults(data, recommendations, proxyName, isDemo);
+
+                    // Показываем iframe
+                    iframeContainer.style.display = 'block';
+                    iframeUrl.textContent = url;
+                    siteFrame.src = url;
+
+                    saveToHistory({
+                        url: url,
+                        date: new Date().toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                        data: data,
+                        recommendations: recommendations,
+                        proxy: proxyName,
+                        isDemo: isDemo
+                    });
+
+                } catch (error) {
+                    console.error('Ошибка:', error);
+                    messageBox.innerHTML = '<div class="alert alert-error"><span class="alert-icon">❌</span> ' + error.message + '</div>';
+
+                    iframeContainer.style.display = 'block';
+                    iframeUrl.textContent = url + ' (только просмотр)';
+                    siteFrame.src = url;
+
+                } finally {
+                    spinnerBox.classList.remove('visible');
+                    analyzeBtn.disabled = false;
+                }
+            }
+
+            // ============================================================
+            // ОБРАБОТЧИКИ
+            // ============================================================
+            document.getElementById('analyzeBtn').addEventListener('click', runAnalysis);
+            document.getElementById('urlInput').addEventListener('keydown', function(e) { if (e.key === 'Enter') runAnalysis(); });
+
+            document.getElementById('iframeClose').addEventListener('click', function() {
+                document.getElementById('iframeContainer').style.display = 'none';
+                document.getElementById('siteFrame').src = '';
+            });
+
+            document.getElementById('themeToggle').addEventListener('click', function() {
+                document.body.classList.toggle('dark-theme');
+                localStorage.setItem('webinspector_theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
+            });
+
+            document.getElementById('copyBtn').addEventListener('click', function() {
+                if (!currentReportData) return;
+                var data = currentReportData.data;
+                var recommendations = currentReportData.recommendations;
+
+                var text = '═══════════════════════════════\n';
+                text += '  ОТЧЁТ WEBINSPECTOR PRO\n';
+                text += '═══════════════════════════════\n\n';
+                text += 'URL: ' + data.url + '\n';
+                text += 'Домен: ' + data.domain + '\n';
+                text += 'Дата: ' + new Date().toLocaleString('ru-RU') + '\n\n';
+
+                text += '─── СТАТИСТИКА ───\n';
+                text += 'Название: ' + (data.title || '—') + '\n';
+                text += 'H1: ' + data.headings.h1 + ' | H2: ' + data.headings.h2 + ' | H3: ' + data.headings.h3 + '\n';
+                text += 'Изображений: ' + data.images + ' (с alt: ' + data.imagesWithAlt + ')\n';
+                text += 'Ссылок: ' + data.links + ' (внутренних: ' + data.internalLinks + ', внешних: ' + data.externalLinks + ')\n';
+                text += 'SSL: ' + (data.hasSSL ? 'Да' : 'Нет') + '\n';
+                text += 'Viewport: ' + (data.hasViewport ? 'Да' : 'Нет') + '\n';
+                text += 'Размер: ~' + data.sizeKB + ' КБ\n\n';
+
+                var sections = [
+                    { title: 'КРИТИЧЕСКИЕ ОШИБКИ', items: recommendations.critical },
+                    { title: 'ПРЕДУПРЕЖДЕНИЯ', items: recommendations.warnings },
+                    { title: 'УСПЕХИ', items: recommendations.success }
+                ];
+
+                sections.forEach(function(sec) {
+                    if (sec.items.length > 0) {
+                        text += '─── ' + sec.title + ' (' + sec.items.length + ') ───\n';
+                        sec.items.forEach(function(item, i) {
+                            text += '  ' + (i + 1) + '. ' + item.title + '\n';
+                            text += '     ' + item.detail + '\n\n';
+                        });
+                    }
+                });
+
+                navigator.clipboard.writeText(text).then(function() {
+                    document.getElementById('messageBox').innerHTML = '<div class="alert alert-success"><span class="alert-icon">📋</span> Отчёт скопирован в буфер обмена!</div>';
+                }).catch(function() {
+                    document.getElementById('messageBox').innerHTML = '<div class="alert alert-error"><span class="alert-icon">❌</span> Не удалось скопировать.</div>';
+                });
+            });
+
+            document.getElementById('printBtn').addEventListener('click', function() { window.print(); });
+
+            document.getElementById('clearHistoryBtn').addEventListener('click', function() {
+                if (confirm('Очистить всю историю проверок?')) {
+                    localStorage.removeItem('webinspector_history');
+                    renderHistoryList();
+                }
+            });
+
+            // ============================================================
+            // ИНИЦИАЛИЗАЦИЯ
+            // ============================================================
+            function init() {
+                if (localStorage.getItem('webinspector_theme') === 'dark') {
+                    document.body.classList.add('dark-theme');
+                }
+                renderHistoryList();
+                console.log('WebInspector Pro готов');
+                console.log('Прокси:', PROXY_SERVERS.map(p => p.name).join(', '));
+                console.log('Демо-режим для:', Object.keys(DEMO_DATA).join(', '));
+            }
+
+            init();
+
+        })();
+    </script>
+</body>
+</html>
