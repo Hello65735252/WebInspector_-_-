@@ -6,9 +6,6 @@
     <title>WebInspector Pro — Аудит сайтов</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <style>
-        /* ============================================================
-           СОВРЕМЕННЫЙ ДИЗАЙН 2024
-           ============================================================ */
         :root {
             --bg: #f0f4f9;
             --surface: #ffffff;
@@ -532,7 +529,6 @@
 </head>
 <body>
     <div class="app">
-        <!-- HEADER -->
         <header class="header">
             <div class="logo">
                 <div class="logo-icon">🔍</div>
@@ -545,7 +541,6 @@
             </div>
         </header>
 
-        <!-- SEARCH -->
         <div class="search-card">
             <div class="search-title">⚡ Быстрый аудит сайта</div>
             <div class="search-row">
@@ -571,7 +566,6 @@
             <iframe class="iframe-wrapper" id="siteFrame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
         </div>
 
-        <!-- RESULTS -->
         <div id="resultsContainer"></div>
 
         <!-- ACTIONS -->
@@ -595,10 +589,6 @@
     <script>
         (function() {
             'use strict';
-
-            // ============================================================
-            // РАБОЧИЕ ПРОКСИ (ПРОВЕРЕНЫ)
-            // ============================================================
             const PROXY_SERVERS = [
                 {
                     name: 'allorigins.win',
@@ -616,10 +606,6 @@
                     timeout: 15000
                 }
             ];
-
-            // ============================================================
-            // ДЕМО-ДАННЫЕ (для сайтов, которые блокируют запросы)
-            // ============================================================
             const DEMO_DATA = {
                 'yandex.ru': {
                     title: 'Яндекс — поисковая система',
@@ -718,10 +704,6 @@
                 }
                 return null;
             }
-
-            // ============================================================
-            // ВАЛИДАЦИЯ URL
-            // ============================================================
             function validateUrl(raw) {
                 let url = raw.trim().replace(/\s+/g, '');
                 if (!url) return null;
@@ -740,10 +722,6 @@
             function getDomain(url) {
                 try { return new URL(url).hostname; } catch (_) { return url; }
             }
-
-            // ============================================================
-            // ПОЛУЧЕНИЕ HTML ЧЕРЕЗ ПРОКСИ
-            // ============================================================
             async function fetchThroughProxy(targetUrl, onProgress) {
                 let lastError = null;
 
@@ -794,10 +772,6 @@
 
                 throw new Error('Не удалось получить доступ к сайту.');
             }
-
-            // ============================================================
-            // ПАРСИНГ HTML
-            // ============================================================
             function parseHtml(htmlString, fullUrl) {
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(htmlString, 'text/html');
@@ -888,9 +862,6 @@
                 };
             }
 
-            // ============================================================
-            // ГЕНЕРАЦИЯ РЕКОМЕНДАЦИЙ
-            // ============================================================
             function generateRecommendations(data) {
                 var critical = [];
                 var warnings = [];
@@ -967,10 +938,6 @@
 
                 return { critical: critical, warnings: warnings, success: success };
             }
-
-            // ============================================================
-            // ОТРИСОВКА РЕЗУЛЬТАТОВ
-            // ============================================================
             function renderResults(data, recommendations, proxyName, isDemo) {
                 var container = document.getElementById('resultsContainer');
                 while (container.firstChild) { container.removeChild(container.firstChild); }
@@ -1109,10 +1076,6 @@
             }
 
             var currentReportData = null;
-
-            // ============================================================
-            // ГЛАВНЫЙ КОНТРОЛЛЕР
-            // ============================================================
             async function runAnalysis() {
                 var urlInput = document.getElementById('urlInput');
                 var analyzeBtn = document.getElementById('analyzeBtn');
@@ -1146,7 +1109,6 @@
                 try {
                     let data, recommendations, proxyName, isDemo = false;
 
-                    // Проверяем демо-данные
                     const demoData = getDemoData(url);
                     if (demoData) {
                         spinnerText.textContent = '🔮 Используем демо-данные для этого сайта...';
@@ -1158,7 +1120,6 @@
 
                         messageBox.innerHTML = '<div class="alert alert-info"><span class="alert-icon">ℹ️</span> Демо-режим: сайт ' + getDomain(url) + ' использует демонстрационные данные для анализа</div>';
                     } else {
-                        // Пробуем через прокси
                         var result = await fetchThroughProxy(url, function(msg) {
                             spinnerText.textContent = msg;
                         });
@@ -1202,10 +1163,6 @@
                     analyzeBtn.disabled = false;
                 }
             }
-
-            // ============================================================
-            // ОБРАБОТЧИКИ
-            // ============================================================
             document.getElementById('analyzeBtn').addEventListener('click', runAnalysis);
             document.getElementById('urlInput').addEventListener('keydown', function(e) { if (e.key === 'Enter') runAnalysis(); });
 
@@ -1271,10 +1228,6 @@
                     renderHistoryList();
                 }
             });
-
-            // ============================================================
-            // ИНИЦИАЛИЗАЦИЯ
-            // ============================================================
             function init() {
                 if (localStorage.getItem('webinspector_theme') === 'dark') {
                     document.body.classList.add('dark-theme');
